@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Player Registration</title>
+</head>
+<body>
+
+<h2>Player Registration</h2>
+
+<label><b>Full Name</b></label><br>
+<input type="text" id="Name" placeholder="Full Name" required><br><br>
+
+<label><b>WhatsApp Number</b></label><br>
+<input type="text" id="WhatsAppNumber" placeholder="WhatsApp Number" required><br><br>
+
+<label><b>Date of Birth</b></label><br>
+<input type="date" id="DateOfBirth"><br><br>
+
+<label><b>City</b></label><br>
+<input type="text" id="City"><br><br>
+
+<label><b>Shirt Size</b></label><br>
+<select id="ShirtSize">
+  <option value="S">S</option>
+  <option value="M">M</option>
+  <option value="L">L</option>
+</select><br><br>
+
+<label><b>Short Size</b></label><br>
+<select id="ShortSize">
+  <option value="S">S</option>
+  <option value="M">M</option>
+  <option value="L">L</option>
+</select><br><br>
+
+<label><b>Food Preference</b></label><br>
+<select id="FoodPref">
+  <option value="Veg">Veg</option>
+  <option value="Non-Veg">Non-Veg</option>
+</select><br><br>
+
+<label><b>Stay Required</b></label><br>
+<select id="StayYorN">
+  <option value="Yes">Yes</option>
+  <option value="No">No</option>
+</select><br><br>
+
+<label><b>Fee Status</b></label><br>
+<select id="FeePaid">
+  <option value="Paid">Paid</option>
+  <option value="Not Paid">Not Paid</option>
+</select><br><br>
+
+<button onclick="register()">Register</button>
+
+<p id="msg"></p>
+
+<script>
+function register() {
+  const data = {
+    Name: document.getElementById("Name").value,
+    WhatsAppNumber: document.getElementById("WhatsAppNumber").value,
+    DateOfBirth: document.getElementById("DateOfBirth").value,
+    City: document.getElementById("City").value,
+    ShirtSize: document.getElementById("ShirtSize").value,
+    ShortSize: document.getElementById("ShortSize").value,
+    FoodPref: document.getElementById("FoodPref").value,
+    StayYorN: document.getElementById("StayYorN").value,
+    FeePaid: document.getElementById("FeePaid").value
+  };
+
+  fetch("/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(r => {
+    if (r.success) {
+      document.getElementById("msg").innerText = "Registration successful";
+      window.location.href = "view.html";
+    } else {
+      document.getElementById("msg").innerText = r.message;
+    }
+  });
+}
+</script>
+
+</body>
+</html>

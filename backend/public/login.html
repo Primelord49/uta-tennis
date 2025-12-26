@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>Player Login</h2>
+<input id="whatsapp" placeholder="WhatsApp">
+<button onclick="login()">Login</button>
+<p id="msg"></p>
+
+<script>
+function login() {
+  fetch("/login", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ whatsapp: whatsapp.value })
+  })
+  .then(res=>res.json())
+  .then(data=>{
+    if(data.success) location.href="view.html";
+    else msg.innerText="❌ Player not found";
+  });
+}
+</script>
+
+</body>
+</html>
+
+
+
+
+
+

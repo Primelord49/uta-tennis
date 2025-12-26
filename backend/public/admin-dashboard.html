@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h2>Welcome back, Admin!</h2>
+
+<table>
+<thead>
+<tr><th>Name</th><th>WhatsApp</th><th>City</th></tr>
+</thead>
+<tbody id="rows"></tbody>
+</table>
+
+<script>
+fetch("/players")
+.then(res=>res.json())
+.then(data=>{
+  data.forEach(p=>{
+    rows.innerHTML+=`
+      <tr>
+        <td>${p.Name}</td>
+        <td>${p.WhatsAppNumber}</td>
+        <td>${p.City}</td>
+      </tr>`;
+  });
+});
+</script>
+
+</body>
+</html>
+
+
+
+
