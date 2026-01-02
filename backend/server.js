@@ -2,19 +2,20 @@ require("dotenv").config();
 const express = require("express");
 const mysql = require("mysql2");
 const cors = require("cors");
-const path = require("path");
 
 const app = express();
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
 
+/* MySQL Connection */
 const db = mysql.createConnection({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT || 3306,
+  connectTimeout: 20000
 });
 
 db.connect(err => {
@@ -23,6 +24,11 @@ db.connect(err => {
     return;
   }
   console.log("✅ Connected to MySQL");
+});
+
+/* Health check */
+app.get("/", (req, res) => {
+  res.send("UTA Tennis Backend is running");
 });
 
 /* REGISTER PLAYER */
@@ -39,13 +45,8 @@ app.post("/register", (req, res) => {
     FeePaid
   } = req.body;
 
-  console.log("Incoming:", req.body);
-
   if (!Name || !WhatsAppNumber) {
-    return res.json({
-      success: false,
-      message: "Name and WhatsApp are required"
-    });
+    return res.json({ success: false, message: "Required fields missing" });
   }
 
   const sql = `
@@ -69,18 +70,13 @@ app.post("/register", (req, res) => {
     ],
     (err) => {
       if (err) {
-        console.error("INSERT ERROR:", err);
-        return res.json({
-          success: false,
-          message: "Database error"
-        });
+        console.error(err);
+        return res.json({ success: false });
       }
-
       res.json({ success: true });
     }
   );
 });
-
 
 /* VIEW PLAYERS */
 app.get("/players", (req, res) => {
@@ -93,10 +89,10 @@ app.get("/players", (req, res) => {
 /* PLAYER LOGIN */
 app.post("/login", (req, res) => {
   db.query(
-    "SELECT * FROM tbl_players WHERE WhatsAppNumber=?",
+    "SELECT * FROM tbl_players WHERE WhatsAppNumber = ?",
     [req.body.whatsapp],
     (err, rows) => {
-      if (rows.length > 0) res.json({ success: true });
+      if (rows && rows.length > 0) res.json({ success: true });
       else res.json({ success: false });
     }
   );
@@ -111,9 +107,8 @@ app.post("/admin-login", (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("🚀 Server running at:");
-  console.log("➡ http://localhost:3000/register.html");
-  console.log("➡ http://localhost:3000/login.html");
-  console.log("➡ http://localhost:3000/admin-login.html");
+/* START SERVER */
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
