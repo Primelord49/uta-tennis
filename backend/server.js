@@ -8,7 +8,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* MySQL Connection */
+/* =========================
+   MySQL Connection
+========================= */
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
@@ -26,12 +28,16 @@ db.connect(err => {
   console.log("✅ Connected to MySQL");
 });
 
-/* Health check */
+/* =========================
+   Health Check
+========================= */
 app.get("/", (req, res) => {
   res.send("UTA Tennis Backend is running");
 });
 
-/* REGISTER PLAYER */
+/* =========================
+   REGISTER PLAYER (CREATE)
+========================= */
 app.post("/register", (req, res) => {
   const {
     Name,
@@ -70,7 +76,7 @@ app.post("/register", (req, res) => {
     ],
     (err) => {
       if (err) {
-        console.error(err);
+        console.error("Insert error:", err);
         return res.json({ success: false });
       }
       res.json({ success: true });
@@ -78,18 +84,25 @@ app.post("/register", (req, res) => {
   );
 });
 
-/* VIEW PLAYERS */
+/* =========================
+   VIEW PLAYERS (READ)
+========================= */
 app.get("/players", (req, res) => {
   db.query("SELECT * FROM tbl_players", (err, rows) => {
-    if (err) return res.json([]);
+    if (err) {
+      console.error("Fetch error:", err);
+      return res.json([]);
+    }
     res.json(rows);
   });
 });
 
-/* PLAYER LOGIN */
+/* =========================
+   PLAYER LOGIN
+========================= */
 app.post("/login", (req, res) => {
   db.query(
-    "SELECT * FROM tbl_players WHERE WhatsAppNumber = ?",
+    "SELECT id FROM tbl_players WHERE WhatsAppNumber = ?",
     [req.body.whatsapp],
     (err, rows) => {
       if (rows && rows.length > 0) res.json({ success: true });
@@ -98,7 +111,9 @@ app.post("/login", (req, res) => {
   );
 });
 
-/* ADMIN LOGIN */
+/* =========================
+   ADMIN LOGIN
+========================= */
 app.post("/admin-login", (req, res) => {
   if (req.body.username === "admin" && req.body.password === "admin123") {
     res.json({ success: true });
@@ -107,7 +122,50 @@ app.post("/admin-login", (req, res) => {
   }
 });
 
-/* START SERVER */
+/* =========================
+   UPDATE PLAYER (ADMIN)
+========================= */
+app.put("/players/:id", (req, res) => {
+  const { Name, WhatsAppNumber, City } = req.body;
+  const id = req.params.id;
+
+  const sql = `
+    UPDATE tbl_players
+    SET Name = ?, WhatsAppNumber = ?, City = ?
+    WHERE id = ?
+  `;
+
+  db.query(sql, [Name, WhatsAppNumber, City, id], (err) => {
+    if (err) {
+      console.error("Update error:", err);
+      return res.json({ success: false });
+    }
+    res.json({ success: true });
+  });
+});
+
+/* =========================
+   DELETE PLAYER (ADMIN)
+========================= */
+app.delete("/players/:id", (req, res) => {
+  const id = req.params.id;
+
+  db.query(
+    "DELETE FROM tbl_players WHERE id = ?",
+    [id],
+    (err) => {
+      if (err) {
+        console.error("Delete error:", err);
+        return res.json({ success: false });
+      }
+      res.json({ success: true });
+    }
+  );
+});
+
+/* =========================
+   START SERVER
+========================= */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
